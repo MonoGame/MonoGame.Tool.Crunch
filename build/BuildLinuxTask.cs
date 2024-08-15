@@ -10,6 +10,7 @@ public sealed class BuildLinuxTask : FrostingTask<BuildContext>
     public override void Run(BuildContext context)
     {
         var buildWorkingDir = "crunch_build/";
+        Directory.CreateDirectory(buildWorkingDir);
         // Path relative to the buildWorkingDir
         var cmakeListsPath = System.IO.Path.Combine("..", "crunch", "CMakeLists.txt");
         context.StartProcess("cmake", new ProcessSettings { WorkingDirectory = buildWorkingDir, Arguments = cmakeListsPath });
