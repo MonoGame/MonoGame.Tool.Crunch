@@ -13,10 +13,11 @@ public sealed class BuildWindowsTask : FrostingTask<BuildContext>
         Directory.CreateDirectory(buildWorkingDir);
         // Path relative to the buildWorkingDir
         var cmakeListsPath = System.IO.Path.Combine("..", "crunch", "CMakeLists.txt");
-        context.StartProcess("cmake", new ProcessSettings { WorkingDirectory = buildWorkingDir, Arguments = $"-DSAN=ON {cmakeListsPath}" });
+        context.StartProcess("cmake", new ProcessSettings { WorkingDirectory = buildWorkingDir, Arguments = cmakeListsPath });
         context.ReplaceTextInFiles("crunch_build/crunch.vcxproj", "MultiThreadedDLL", "MultiThreaded");
+        context.ReplaceTextInFiles("crunch_build/crnlib/crn-obj.vcxproj",  "MultiThreadedDLL", "MultiThreaded");
         context.StartProcess("cmake", new ProcessSettings { WorkingDirectory = buildWorkingDir, Arguments = "--build . --config release" });
-        var files = Directory.GetFiles(System.IO.Path.Combine (buildWorkingDir, "bin", "Release"), "crunch.exe", SearchOption.TopDirectoryOnly);
+        var files = Directory.GetFiles(System.IO.Path.Combine (buildWorkingDir, "Release"), "crunch.exe", SearchOption.TopDirectoryOnly);
         context.CopyFile(files[0], $"{context.ArtifactsDir}/crunch.exe");
     }
 }
