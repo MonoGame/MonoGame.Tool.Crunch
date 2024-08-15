@@ -1,0 +1,6 @@
+[submodule "crunch"]
+	path = crunch
+	url = https://github.com/illwieckz/crunch.git
+[submodule "buildscripts"]
+	path = buildscripts
+	url = https://github.com/MonoGame/MonoGame.Tool.BuildScripts.git

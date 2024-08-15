@@ -1,0 +1,74 @@
+name: Build
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: build-${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+      fail-fast: false
+    steps:
+      - name: Expose GitHub Runtime
+        uses: crazy-max/ghaction-github-runtime@v3
+
+      - name: Install Mac Dependencies
+        if: runner.os == 'macOS'
+        run: |
+          brew install cmake autoconf automake libtool
+
+      - name: Install Linux Dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get install cmake autoconf automake libtool
+
+      - name: Clone repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Run Cake
+        run: dotnet run --project ./build/Build.csproj --universalBinary=true
+        env:
+          ACTIONS_RUNTIME_TOKEN: ${{ env.ACTIONS_RUNTIME_TOKEN }}
+          ACTIONS_RUNTIME_URL: "${{ env.ACTIONS_RUNTIME_URL }}"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+  deploy:
+    name: deploy
+    if: ${{ github.event_name == 'push' }}
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: write
+    needs: [ build ]
+    steps:
+      - name: Expose GitHub Runtime
+        uses: crazy-max/ghaction-github-runtime@v3
+
+      - name: Clone repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Rename License File
+        run: mv ./crunch/license.txt ./crunch/LICENSE          
+
+      - name: Run CAKE
+        run: dotnet run --project ./build/Build.csproj -- --target=Package --universalBinary=true --toolname=crunch --executablename=crunch --commandname=mgcb-crunch --licensepath=crunch/LICENSE
+        env:
+          ACTIONS_RUNTIME_TOKEN: ${{ env.ACTIONS_RUNTIME_TOKEN }}
+          ACTIONS_RUNTIME_URL: "${{ env.ACTIONS_RUNTIME_URL }}"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Make a release
+        if: github.ref_type == 'tag'
+        uses: ncipollo/release-action@v1
+        with:
+          name: 'MonoGame.Tool.Crunch ${{ github.ref_name }}'
+          tag: ${{ github.ref_name }}
+          allowUpdates: true
+          removeArtifacts: true
+          artifacts: "artifacts/**/*.nupkg"
+          token: ${{ secrets.GITHUB_TOKEN }}
