@@ -56,7 +56,7 @@ jobs:
         run: mv ./crunch/license.txt ./crunch/LICENSE          
 
       - name: Run CAKE
-        run: dotnet run --project ./build/Build.csproj -- --target=Package --universalBinary=true --toolname=crunch --executablename=crunch --commandname=mgcb-crunch --licensepath=crunch/LICENSE
+        run: dotnet run --project ./build/Build.csproj -- --target=Package --universalBinary=true --toolname=crunch --executablename=crunch --licensepath=crunch/LICENSE
         env:
           ACTIONS_RUNTIME_TOKEN: ${{ env.ACTIONS_RUNTIME_TOKEN }}
           ACTIONS_RUNTIME_URL: "${{ env.ACTIONS_RUNTIME_URL }}"
