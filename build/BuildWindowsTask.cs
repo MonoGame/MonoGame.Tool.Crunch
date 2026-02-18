@@ -10,7 +10,7 @@ public sealed class BuildWindowsTask : FrostingTask<BuildContext>
     public override void Run(BuildContext context)
     {
         BuildForArchitecture(context, "x64", "windows-x64");
-        BuildForArchitecture(context, "ARM64", "windows-arm64");
+        BuildForArchitecture(context, "ARM64", "windows-arm64", "-DCMAKE_CXX_FLAGS=\"/D_mm_pause=YieldProcessor\"");
     }
 
     private void BuildForArchitecture(BuildContext context, string cmakeArch, string rid, string cmakeOptions = "")
