@@ -16,6 +16,12 @@ public sealed class BuildLinuxTask : FrostingTask<BuildContext>
         context.StartProcessWithDocker("cmake", new ProcessSettings { WorkingDirectory = buildWorkingDir, Arguments = $"-DCMAKE_BUILD_TYPE=Release -DBUILD_CRUNCH=ON -DBUILD_SHARED_LIBCRN=OFF -DBUILD_SHARED_LIBS=OFF -DBUILD_EXAMPLES=OFF {cmakeListsPath}" });
         context.StartProcessWithDocker("make", new ProcessSettings { WorkingDirectory = buildWorkingDir, Arguments = "" });
         var files = Directory.GetFiles(buildWorkingDir, "crunch", SearchOption.TopDirectoryOnly);
-        context.CopyFile(files[0], $"{context.ArtifactsDir}/crunch");
+        var artifact = $"{context.ArtifactsDir}/crunch";
+        context.CopyFile(files[0], artifact);
+        
+        var stripArguments = new ProcessArgumentBuilder();
+        stripArguments.Append("--strip-unneeded");
+        stripArguments.AppendQuoted(artifact);
+        context.StartProcessWithDocker("strip", new ProcessSettings { WorkingDirectory = "", Arguments = stripArguments });
     }
 }
